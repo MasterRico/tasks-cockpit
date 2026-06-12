@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task Cockpit</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,sans-serif; background:#0e1116; color:#e6e6e6; }
+  header { padding:14px 20px; border-bottom:1px solid #222a35; display:flex;
+           align-items:center; gap:14px; position:sticky; top:0; background:#0e1116; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  header .sub { color:#8a94a6; font-size:12px; }
+  .board { display:flex; gap:14px; padding:18px; overflow-x:auto; align-items:flex-start; }
+  .col { flex:0 0 300px; background:#141a22; border:1px solid #222a35; border-radius:10px; }
+  .col h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em;
+            color:#8a94a6; margin:0; padding:12px 14px; border-bottom:1px solid #222a35; }
+  .col h2 span { color:#5b6678; }
+  .cards { padding:10px; display:flex; flex-direction:column; gap:10px; min-height:20px; }
+  .card { background:#0e1116; border:1px solid #283242; border-left-width:4px;
+          border-radius:8px; padding:10px 11px; }
+  .card.green  { border-left-color:#2ecc71; }
+  .card.yellow { border-left-color:#f1c40f; }
+  .card.red    { border-left-color:#e74c3c; }
+  .card .proj { font-size:11px; color:#8a94a6; text-transform:uppercase; letter-spacing:.04em; }
+  .card .title { font-weight:600; margin:3px 0 6px; }
+  .card .measure { color:#c2cad6; margin:0 0 6px; }
+  .card .micro { color:#8a94a6; font-size:12px; margin:0 0 6px; }
+  .card .result { color:#9fe6bf; font-size:12px; margin:6px 0 0;
+                  border-top:1px dashed #283242; padding-top:6px; white-space:pre-wrap; }
+  .meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .tag { font-size:11px; padding:1px 7px; border-radius:99px; background:#1c2430; color:#aeb8c7; }
+  .tag.high { background:#3a1d1d; color:#ff9b9b; }
+  .tag.lvl-green  { background:#16331f; color:#7fe0a3; }
+  .tag.lvl-yellow { background:#332c12; color:#f3d970; }
+  .tag.lvl-red    { background:#331717; color:#f39b9b; }
+  .actions { display:flex; gap:6px; margin-top:9px; }
+  .actions button { flex:1; font:12px system-ui; padding:5px 0; border-radius:6px;
+                    border:1px solid #2c3647; background:#1a2230; color:#dbe2ec; cursor:pointer; }
+  .actions button:hover { background:#222d3d; }
+  .actions button.go { border-color:#2e6b46; color:#9fe6bf; }
+  .empty { color:#5b6678; font-size:12px; padding:6px 4px; }
+  a.reload { margin-left:auto; color:#8a94a6; text-decoration:none; font-size:12px;
+             border:1px solid #222a35; padding:5px 10px; border-radius:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Task Cockpit</h1>
+  <span class="sub">🟢 erledige ich · 🟡 Freigabe nötig · 🔴 nur du</span>
+  <a class="reload" href="/">↻ Reload</a>
+</header>
+
+<div class="board">
+  {% for s in board %}
+  <div class="col">
+    <h2>{{ {"awaiting_approval":"Freigabe nötig","in_progress":"In Arbeit","open":"Offen","blocked":"Blockiert","done":"Erledigt"}[s] }}
+        <span>· {{ counts[s] }}</span></h2>
+    <div class="cards">
+      {% for t in columns[s] %}
+      <div class="card {{ t.automation_level }}">
+        <div class="proj">{{ t.project or "—" }}</div>
+        <div class="title">{{ t.title }}</div>
+        {% if t.measure %}<p class="measure">{{ t.measure }}</p>{% endif %}
+        {% if t.micro_action %}<p class="micro">→ {{ t.micro_action }}</p>{% endif %}
+        <div class="meta">
+          <span class="tag lvl-{{ t.automation_level }}">
+            {{ {"green":"🟢 auto","yellow":"🟡 freigeben","red":"🔴 nur du"}[t.automation_level] }}</span>
+          {% if t.priority == "high" %}<span class="tag high">hoch</span>{% endif %}
+          {% if t.due_date %}<span class="tag">📅 {{ t.due_date }}</span>{% endif %}
+        </div>
+        {% if t.result %}<div class="result">{{ t.result }}</div>{% endif %}
+        <div class="actions">
+          {% if s == "awaiting_approval" %}
+            <form method="post" action="/ui/{{ t.id }}/approve"><button class="go">Freigeben</button></form>
+            <form method="post" action="/ui/{{ t.id }}/cancel"><button>Verwerfen</button></form>
+          {% elif s == "done" %}
+            <form method="post" action="/ui/{{ t.id }}/reopen"><button>Wieder öffnen</button></form>
+          {% else %}
+            <form method="post" action="/ui/{{ t.id }}/done"><button class="go">Erledigt</button></form>
+            <form method="post" action="/ui/{{ t.id }}/cancel"><button>Verwerfen</button></form>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty">—</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+# tasks-cockpit — eigenständiger Task-Service für tasks.ooopppmmm.com
+# Getrennt von KDP/Merch: eigenes Postgres, eigener Service, eigene Subdomain.
+#
+# Coolify: als "Docker Compose"-Ressource aus dem Git-Repo deployen.
+# Env-Variablen (POSTGRES_PASSWORD, API_KEY, DASH_PASS) in Coolify als
+# Secrets setzen — NICHT hier eintragen.
+# Domain in Coolify auf den Service "app", Port 8000 legen.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: tasks
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasks -d tasks"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://tasks:${POSTGRES_PASSWORD}@db:5432/tasks"
+      API_KEY: ${API_KEY}
+      DASH_USER: ${DASH_USER:-alex}
+      DASH_PASS: ${DASH_PASS}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+volumes:
+  pgdata:
