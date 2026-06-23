@@ -166,6 +166,8 @@ def upsert_task(t: TaskIn):
              %(micro_action)s, %(automation_level)s, %(status)s, %(priority)s,
              %(due_date)s, %(dedupe_key)s)
         ON CONFLICT (dedupe_key) DO UPDATE SET
+            title = EXCLUDED.title,
+            project = EXCLUDED.project,
             detail = EXCLUDED.detail,
             measure = EXCLUDED.measure,
             micro_action = EXCLUDED.micro_action,
