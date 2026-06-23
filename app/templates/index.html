@@ -1,94 +1,283 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Task Cockpit</title>
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { margin:0; font:14px/1.45 system-ui,sans-serif; background:#0e1116; color:#e6e6e6; }
-  header { padding:14px 20px; border-bottom:1px solid #222a35; display:flex;
-           align-items:center; gap:14px; position:sticky; top:0; background:#0e1116; }
-  header h1 { font-size:16px; margin:0; font-weight:600; }
-  header .sub { color:#8a94a6; font-size:12px; }
-  .board { display:flex; gap:14px; padding:18px; overflow-x:auto; align-items:flex-start; }
-  .col { flex:0 0 300px; background:#141a22; border:1px solid #222a35; border-radius:10px; }
-  .col h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em;
-            color:#8a94a6; margin:0; padding:12px 14px; border-bottom:1px solid #222a35; }
-  .col h2 span { color:#5b6678; }
-  .cards { padding:10px; display:flex; flex-direction:column; gap:10px; min-height:20px; }
-  .card { background:#0e1116; border:1px solid #283242; border-left-width:4px;
-          border-radius:8px; padding:10px 11px; }
-  .card.green  { border-left-color:#2ecc71; }
-  .card.yellow { border-left-color:#f1c40f; }
-  .card.red    { border-left-color:#e74c3c; }
-  .card .proj { font-size:11px; color:#8a94a6; text-transform:uppercase; letter-spacing:.04em; }
-  .card .title { font-weight:600; margin:3px 0 6px; }
-  .card .measure { color:#c2cad6; margin:0 0 6px; }
-  .card .micro { color:#8a94a6; font-size:12px; margin:0 0 6px; }
-  .card .result { color:#9fe6bf; font-size:12px; margin:6px 0 0;
-                  border-top:1px dashed #283242; padding-top:6px; white-space:pre-wrap; }
-  .meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-  .tag { font-size:11px; padding:1px 7px; border-radius:99px; background:#1c2430; color:#aeb8c7; }
-  .tag.high { background:#3a1d1d; color:#ff9b9b; }
-  .tag.lvl-green  { background:#16331f; color:#7fe0a3; }
-  .tag.lvl-yellow { background:#332c12; color:#f3d970; }
-  .tag.lvl-red    { background:#331717; color:#f39b9b; }
-  .actions { display:flex; gap:6px; margin-top:9px; }
-  .actions button { flex:1; font:12px system-ui; padding:5px 0; border-radius:6px;
-                    border:1px solid #2c3647; background:#1a2230; color:#dbe2ec; cursor:pointer; }
-  .actions button:hover { background:#222d3d; }
-  .actions button.go { border-color:#2e6b46; color:#9fe6bf; }
-  .empty { color:#5b6678; font-size:12px; padding:6px 4px; }
-  a.reload { margin-left:auto; color:#8a94a6; text-decoration:none; font-size:12px;
-             border:1px solid #222a35; padding:5px 10px; border-radius:6px; }
+  /* ===== Tokens — Light (Calm Precision) ===== */
+  :root{
+    --bg-base:#FBFBFD; --bg-subtle:#F4F4F7; --surface:#FFFFFF; --surface-hover:#F7F7FA;
+    --border:#E6E6EC; --border-strong:#D2D2DC;
+    --text-primary:#16161A; --text-secondary:#5B5B66; --text-muted:#8A8A96;
+    --accent:#5B5BD6; --accent-hover:#4A4AC4; --accent-subtle:#EDEDFB;
+    --focus-ring:rgba(91,91,214,.40);
+    --status-awaiting_approval:#8A5CD8; --status-awaiting_approval-bg:#F0EAFB;
+    --status-in_progress:#C77D1A;       --status-in_progress-bg:#FBF1E2;
+    --status-open:#3B7DD8;              --status-open-bg:#E9F1FC;
+    --status-blocked:#D14D52;           --status-blocked-bg:#FBEAEA;
+    --status-done:#2E9D6E;              --status-done-bg:#E5F5EE;
+    --prio-high:#E5484D; --prio-mid:#D9930A; --prio-low:#8A8A96;
+    --auto-green:#2E9D6E; --auto-yellow:#D9930A; --auto-red:#E5484D;
+    --shadow-xs:0 1px 2px rgba(16,16,20,.04);
+    --shadow-sm:0 1px 3px rgba(16,16,20,.06),0 1px 2px rgba(16,16,20,.04);
+    --shadow-md:0 4px 12px rgba(16,16,20,.08),0 2px 4px rgba(16,16,20,.04);
+    --shadow-lg:0 12px 32px rgba(16,16,20,.14),0 4px 8px rgba(16,16,20,.06);
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px;
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --dur-fast:120ms; --dur-base:180ms;
+    --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  /* ===== Tokens — Dark (eigene Achse) ===== */
+  :root[data-theme="dark"]{
+    --bg-base:#0E0E11; --bg-subtle:#161619; --surface:#1C1C21; --surface-hover:#232329;
+    --border:#2A2A31; --border-strong:#3A3A44;
+    --text-primary:#ECECEF; --text-secondary:#A0A0AD; --text-muted:#6E6E7A;
+    --accent:#8A8AF0; --accent-hover:#9D9DF5; --accent-subtle:#23233A;
+    --focus-ring:rgba(138,138,240,.45);
+    --status-awaiting_approval:#B79AF0; --status-awaiting_approval-bg:#241C33;
+    --status-in_progress:#E0A656;       --status-in_progress-bg:#2B2113;
+    --status-open:#6AA5F0;              --status-open-bg:#15212E;
+    --status-blocked:#E87478;           --status-blocked-bg:#2B1618;
+    --status-done:#5FC79B;              --status-done-bg:#13261D;
+    --prio-high:#F2666B; --prio-mid:#E8AC3E; --prio-low:#8A8A96;
+    --auto-green:#5FC79B; --auto-yellow:#E8AC3E; --auto-red:#F2666B;
+    --shadow-xs:0 1px 2px rgba(0,0,0,.30);
+    --shadow-sm:0 1px 3px rgba(0,0,0,.35);
+    --shadow-md:0 4px 12px rgba(0,0,0,.40),inset 0 0 0 1px rgba(255,255,255,.04);
+    --shadow-lg:0 12px 32px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root[data-theme="auto"]{
+      --bg-base:#0E0E11; --bg-subtle:#161619; --surface:#1C1C21; --surface-hover:#232329;
+      --border:#2A2A31; --border-strong:#3A3A44;
+      --text-primary:#ECECEF; --text-secondary:#A0A0AD; --text-muted:#6E6E7A;
+      --accent:#8A8AF0; --accent-hover:#9D9DF5; --accent-subtle:#23233A;
+      --focus-ring:rgba(138,138,240,.45);
+      --status-awaiting_approval:#B79AF0; --status-awaiting_approval-bg:#241C33;
+      --status-in_progress:#E0A656;       --status-in_progress-bg:#2B2113;
+      --status-open:#6AA5F0;              --status-open-bg:#15212E;
+      --status-blocked:#E87478;           --status-blocked-bg:#2B1618;
+      --status-done:#5FC79B;              --status-done-bg:#13261D;
+      --prio-high:#F2666B; --prio-mid:#E8AC3E; --prio-low:#8A8A96;
+      --auto-green:#5FC79B; --auto-yellow:#E8AC3E; --auto-red:#F2666B;
+      --shadow-xs:0 1px 2px rgba(0,0,0,.30);
+      --shadow-md:0 4px 12px rgba(0,0,0,.40),inset 0 0 0 1px rgba(255,255,255,.04);
+      --shadow-lg:0 12px 32px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+  }
+  @media (prefers-reduced-motion:reduce){ :root{ --dur-fast:0ms; --dur-base:0ms; } }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{ margin:0; font-family:var(--font-sans); font-size:14px; line-height:1.5;
+        background:var(--bg-base); color:var(--text-primary);
+        -webkit-font-smoothing:antialiased; font-feature-settings:"cv05","ss01"; }
+
+  /* ===== Header ===== */
+  header{ position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:14px;
+          padding:14px 22px; background:color-mix(in srgb,var(--bg-base) 85%, transparent);
+          backdrop-filter:saturate(1.2) blur(10px); border-bottom:1px solid var(--border); }
+  header .brand{ display:flex; align-items:center; gap:10px; }
+  header .logo{ width:22px; height:22px; border-radius:7px; background:linear-gradient(135deg,var(--accent),#9D9DF5);
+                box-shadow:var(--shadow-sm); }
+  header h1{ font-size:15px; font-weight:600; letter-spacing:-.01em; margin:0; }
+  header .legend{ display:flex; gap:12px; margin-left:6px; color:var(--text-muted); font-size:12px; flex-wrap:wrap; }
+  header .legend span{ display:inline-flex; align-items:center; gap:5px; }
+  header .legend .d{ width:7px; height:7px; border-radius:50%; }
+  header .spacer{ margin-left:auto; }
+  .iconbtn{ display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 12px;
+            font:inherit; font-size:12.5px; color:var(--text-secondary); text-decoration:none;
+            background:var(--surface); border:1px solid var(--border); border-radius:8px;
+            cursor:pointer; transition:background var(--dur-fast),border-color var(--dur-fast); }
+  .iconbtn:hover{ background:var(--surface-hover); border-color:var(--border-strong); color:var(--text-primary); }
+  .iconbtn:focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; }
+
+  /* ===== Board ===== */
+  .board{ display:flex; gap:14px; padding:20px 22px 40px; overflow-x:auto; align-items:flex-start;
+          scroll-snap-type:x proximity; }
+  .col{ flex:0 0 304px; max-width:304px; background:var(--bg-subtle); border:1px solid var(--border);
+        border-radius:var(--radius-lg); scroll-snap-align:start; display:flex; flex-direction:column;
+        max-height:calc(100vh - 110px); }
+  .col__head{ position:sticky; top:0; display:flex; align-items:center; gap:8px;
+              padding:13px 14px 11px; }
+  .col__dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .col__title{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.045em;
+               color:var(--text-secondary); }
+  .col__count{ margin-left:auto; min-width:22px; text-align:center; font-size:11.5px; font-weight:600;
+               color:var(--text-muted); background:var(--surface); border:1px solid var(--border);
+               border-radius:999px; padding:1px 8px; font-feature-settings:"tnum"; }
+  .col--awaiting_approval .col__dot{ background:var(--status-awaiting_approval); }
+  .col--in_progress .col__dot{ background:var(--status-in_progress); }
+  .col--open .col__dot{ background:var(--status-open); }
+  .col--blocked .col__dot{ background:var(--status-blocked); }
+  .col--done .col__dot{ background:var(--status-done); }
+  .cards{ padding:4px 10px 12px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
+
+  /* ===== Card ===== */
+  .card{ position:relative; background:var(--surface); border:1px solid var(--border);
+         border-radius:var(--radius-md); padding:12px; box-shadow:var(--shadow-xs);
+         transition:box-shadow var(--dur-fast) var(--ease-out),
+                    transform var(--dur-fast) var(--ease-out),
+                    border-color var(--dur-fast); }
+  .card:hover{ box-shadow:var(--shadow-md); transform:translateY(-1px); border-color:var(--border-strong); }
+  .card.prio-high{ border-left:3px solid var(--prio-high); padding-left:14px; }
+  .card.is-done .card__title{ color:var(--text-secondary); }
+  .card__top{ display:flex; align-items:flex-start; gap:8px; }
+  .prio{ flex:0 0 auto; font-size:13px; line-height:1.25; margin-top:1px; }
+  .prio-high  .prio{ color:var(--prio-high); }
+  .prio-mid   .prio{ color:var(--prio-mid); }
+  .prio-low   .prio{ color:var(--prio-low); }
+  .card__title{ font-size:14px; font-weight:550; line-height:1.4; letter-spacing:-.005em;
+                color:var(--text-primary); flex:1;
+                display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .auto{ flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 7px;
+         font-size:10.5px; font-weight:600; letter-spacing:.01em; border-radius:6px;
+         border:1px solid transparent; white-space:nowrap; }
+  .auto .ad{ width:6px; height:6px; border-radius:50%; }
+  .auto.green { color:var(--auto-green);  background:var(--status-done-bg); }
+  .auto.green .ad{ background:var(--auto-green); }
+  .auto.yellow{ color:var(--auto-yellow); background:var(--status-in_progress-bg); }
+  .auto.yellow .ad{ background:var(--auto-yellow); }
+  .auto.red   { color:var(--auto-red);    background:var(--status-blocked-bg); }
+  .auto.red .ad{ background:var(--auto-red); }
+
+  .measure{ margin:7px 0 0; color:var(--text-secondary); font-size:12.5px; line-height:1.45;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .micro{ margin:6px 0 0; color:var(--text-muted); font-size:12px;
+          display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+  .result{ margin:9px 0 0; padding-top:8px; border-top:1px dashed var(--border);
+           color:var(--status-done); font-size:12px; line-height:1.45; white-space:pre-wrap;
+           display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+  .card__foot{ display:flex; align-items:center; gap:8px; margin-top:11px; flex-wrap:wrap; }
+  .proj{ display:inline-flex; align-items:center; gap:6px; max-width:100%;
+         font-size:11px; font-weight:500; color:var(--text-secondary);
+         background:var(--bg-subtle); border:1px solid var(--border); border-radius:999px; padding:2px 9px 2px 7px; }
+  .proj .pd{ width:7px; height:7px; border-radius:50%; flex:0 0 auto; background:var(--accent); }
+  .due{ margin-left:auto; display:inline-flex; align-items:center; gap:4px; font-size:11.5px;
+        color:var(--text-muted); font-feature-settings:"tnum"; white-space:nowrap; }
+  .due.overdue{ color:var(--prio-high); font-weight:600; }
+
+  /* ===== Actions (auf Hover/Fokus) ===== */
+  .actions{ display:flex; gap:6px; margin-top:11px; max-height:0; overflow:hidden; opacity:0;
+            transition:max-height var(--dur-base) var(--ease-out),opacity var(--dur-fast); }
+  .card:hover .actions, .card:focus-within .actions{ max-height:60px; opacity:1; }
+  .actions form{ flex:1; margin:0; display:flex; }
+  .actions button{ flex:1; height:30px; font:inherit; font-size:12px; font-weight:500;
+                   color:var(--text-secondary); background:var(--bg-subtle);
+                   border:1px solid var(--border); border-radius:7px; cursor:pointer;
+                   transition:background var(--dur-fast),border-color var(--dur-fast),color var(--dur-fast); }
+  .actions button:hover{ background:var(--surface-hover); border-color:var(--border-strong); color:var(--text-primary); }
+  .actions button.go{ color:#fff; background:var(--accent); border-color:var(--accent); }
+  .actions button.go:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
+  .actions button:focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; }
+
+  /* ===== Empty ===== */
+  .empty{ display:flex; align-items:center; justify-content:center; min-height:52px;
+          border:1px dashed var(--border); border-radius:var(--radius-md);
+          color:var(--text-muted); font-size:12px; }
+
+  /* ===== Mobile ===== */
+  @media (max-width:768px){
+    .board{ scroll-snap-type:x mandatory; padding:14px; gap:12px; }
+    .col{ flex:0 0 86vw; max-width:86vw; max-height:none; }
+    .legend{ display:none !important; }
+    .actions{ max-height:60px; opacity:1; } /* Touch: immer sichtbar */
+  }
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 </style>
 </head>
 <body>
 <header>
-  <h1>Task Cockpit</h1>
-  <span class="sub">🟢 erledige ich · 🟡 Freigabe nötig · 🔴 nur du</span>
-  <a class="reload" href="/">↻ Reload</a>
+  <div class="brand"><div class="logo" aria-hidden="true"></div><h1>Task Cockpit</h1></div>
+  <div class="legend" aria-hidden="true">
+    <span><i class="d" style="background:var(--auto-green)"></i>auto</span>
+    <span><i class="d" style="background:var(--auto-yellow)"></i>Freigabe</span>
+    <span><i class="d" style="background:var(--auto-red)"></i>nur du</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="iconbtn" id="theme" type="button" aria-label="Theme wechseln"><span id="theme-ico">◐</span><span id="theme-lbl">Theme</span></button>
+  <a class="iconbtn" href="/" aria-label="Neu laden">↻ Reload</a>
 </header>
 
-<div class="board">
+{% set labels = {"awaiting_approval":"Wartet auf Freigabe","in_progress":"In Arbeit","open":"Offen","blocked":"Blockiert","done":"Erledigt"} %}
+{% set prio_glyph = {"high":"●","medium":"◐","low":"○"} %}
+{% set prio_label = {"high":"Priorität hoch","medium":"Priorität mittel","low":"Priorität niedrig"} %}
+{% set auto_label = {"green":"Auto","yellow":"Semi","red":"Manuell"} %}
+{% set auto_full = {"green":"Vollautomatisch","yellow":"Teilautomatisch — Freigabe nötig","red":"Manuell — nur du"} %}
+
+<main class="board">
   {% for s in board %}
-  <div class="col">
-    <h2>{{ {"awaiting_approval":"Freigabe nötig","in_progress":"In Arbeit","open":"Offen","blocked":"Blockiert","done":"Erledigt"}[s] }}
-        <span>· {{ counts[s] }}</span></h2>
+  <section class="col col--{{ s }}" aria-label="{{ labels[s] }}">
+    <div class="col__head">
+      <span class="col__dot" aria-hidden="true"></span>
+      <span class="col__title">{{ labels[s] }}</span>
+      <span class="col__count">{{ counts[s] }}</span>
+    </div>
     <div class="cards">
       {% for t in columns[s] %}
-      <div class="card {{ t.automation_level }}">
-        <div class="proj">{{ t.project or "—" }}</div>
-        <div class="title">{{ t.title }}</div>
+      <article class="card prio-{{ {'high':'high','medium':'mid','low':'low'}[t.priority] }} {% if t.status=='done' %}is-done{% endif %}" tabindex="0">
+        <div class="card__top">
+          <span class="prio" title="{{ prio_label[t.priority] }}" aria-label="{{ prio_label[t.priority] }}">{{ prio_glyph[t.priority] }}</span>
+          <h3 class="card__title">{{ t.title }}</h3>
+          <span class="auto {{ t.automation_level }}" title="{{ auto_full[t.automation_level] }}">
+            <i class="ad" aria-hidden="true"></i>{{ auto_label[t.automation_level] }}</span>
+        </div>
         {% if t.measure %}<p class="measure">{{ t.measure }}</p>{% endif %}
         {% if t.micro_action %}<p class="micro">→ {{ t.micro_action }}</p>{% endif %}
-        <div class="meta">
-          <span class="tag lvl-{{ t.automation_level }}">
-            {{ {"green":"🟢 auto","yellow":"🟡 freigeben","red":"🔴 nur du"}[t.automation_level] }}</span>
-          {% if t.priority == "high" %}<span class="tag high">hoch</span>{% endif %}
-          {% if t.due_date %}<span class="tag">📅 {{ t.due_date }}</span>{% endif %}
-        </div>
         {% if t.result %}<div class="result">{{ t.result }}</div>{% endif %}
+        <div class="card__foot">
+          <span class="proj" data-proj="{{ t.project or '—' }}"><i class="pd" aria-hidden="true"></i>{{ t.project or "—" }}</span>
+          {% if t.due_date %}<span class="due" data-due="{{ t.due_date }}">📅 {{ t.due_date }}</span>{% endif %}
+        </div>
         <div class="actions">
           {% if s == "awaiting_approval" %}
-            <form method="post" action="/ui/{{ t.id }}/approve"><button class="go">Freigeben</button></form>
-            <form method="post" action="/ui/{{ t.id }}/cancel"><button>Verwerfen</button></form>
+            <form method="post" action="/ui/{{ t.id }}/approve"><button class="go" type="submit">Freigeben</button></form>
+            <form method="post" action="/ui/{{ t.id }}/cancel"><button type="submit">Verwerfen</button></form>
           {% elif s == "done" %}
-            <form method="post" action="/ui/{{ t.id }}/reopen"><button>Wieder öffnen</button></form>
+            <form method="post" action="/ui/{{ t.id }}/reopen"><button type="submit">Wieder öffnen</button></form>
           {% else %}
-            <form method="post" action="/ui/{{ t.id }}/done"><button class="go">Erledigt</button></form>
-            <form method="post" action="/ui/{{ t.id }}/cancel"><button>Verwerfen</button></form>
+            <form method="post" action="/ui/{{ t.id }}/done"><button class="go" type="submit">Erledigt</button></form>
+            <form method="post" action="/ui/{{ t.id }}/cancel"><button type="submit">Verwerfen</button></form>
           {% endif %}
         </div>
-      </div>
+      </article>
       {% else %}
-      <div class="empty">—</div>
+      <div class="empty">Keine Aufgaben</div>
       {% endfor %}
     </div>
-  </div>
+  </section>
   {% endfor %}
-</div>
+</main>
+
+<script>
+  // Theme: auto -> light -> dark, persistiert
+  (function(){
+    var root=document.documentElement, btn=document.getElementById('theme'),
+        ico=document.getElementById('theme-ico'), lbl=document.getElementById('theme-lbl');
+    var modes={auto:['◐','Auto'],light:['☀','Hell'],dark:['☾','Dunkel']};
+    var saved=localStorage.getItem('cockpit-theme')||'auto';
+    apply(saved);
+    function apply(m){ root.setAttribute('data-theme',m); ico.textContent=modes[m][0]; lbl.textContent=modes[m][1]; }
+    btn.addEventListener('click',function(){
+      var order=['auto','light','dark'], cur=localStorage.getItem('cockpit-theme')||'auto';
+      var next=order[(order.indexOf(cur)+1)%order.length];
+      localStorage.setItem('cockpit-theme',next); apply(next);
+    });
+  })();
+  // Projektfarbe (stabiler Hue je Projektname) + Überfällig-Markierung
+  (function(){
+    function hue(s){ var h=0; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))%360; } return h; }
+    document.querySelectorAll('.proj').forEach(function(el){
+      var p=el.getAttribute('data-proj')||''; if(p&&p!=='—'){ el.querySelector('.pd').style.background='hsl('+hue(p)+',58%,55%)'; }
+    });
+    var today=new Date(); today.setHours(0,0,0,0);
+    document.querySelectorAll('.card:not(.is-done) .due').forEach(function(el){
+      var d=new Date(el.getAttribute('data-due')); if(!isNaN(d)&&d<today){ el.classList.add('overdue'); el.firstChild.textContent='⚠ '; }
+    });
+  })();
+</script>
 </body>
 </html>
