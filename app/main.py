@@ -65,6 +65,11 @@ async def lifespan(app: FastAPI):
     pool.open()
     with pool.connection() as conn:
         conn.execute(SCHEMA)
+        # Migration: Board->KI-Flag (idempotent, läuft bei jedem Start)
+        conn.execute(
+            "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS "
+            "ai_requested BOOLEAN NOT NULL DEFAULT false;"
+        )
     yield
     pool.close()
 
@@ -115,6 +120,7 @@ class TaskPatch(BaseModel):
     measure: Optional[str] = None
     micro_action: Optional[str] = None
     due_date: Optional[date] = None
+    ai_requested: Optional[bool] = None
 
 
 def _default_status(level: str) -> str:
@@ -219,6 +225,14 @@ def dashboard(request: Request, _=Depends(require_dash)):
 
 @app.post("/ui/{task_id}/{action}")
 def ui_action(task_id: str, action: str, _=Depends(require_dash)):
+    # Board->KI: Karte für die KI-Arbeiterin markieren / Markierung zurücknehmen
+    if action in ("ai_request", "ai_cancel"):
+        with pool.connection() as conn:
+            conn.execute(
+                "UPDATE tasks SET ai_requested=%s, updated_at=now() WHERE id=%s",
+                (action == "ai_request", task_id),
+            )
+        return RedirectResponse("/", status_code=303)
     mapping = {
         "approve": "in_progress",   # gelb freigegeben -> in Arbeit
         "done": "done",

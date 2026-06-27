@@ -174,6 +174,16 @@
   .actions button.go:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
   .actions button:focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; }
 
+  /* ===== Board->KI ===== */
+  .ki-flag{ margin:8px 0 0; display:inline-flex; align-items:center; gap:5px; height:20px; padding:0 8px;
+            font-size:10.5px; font-weight:600; border-radius:6px;
+            color:var(--accent); background:var(--accent-subtle); }
+  .actions{ flex-wrap:wrap; }
+  .card:hover .actions, .card:focus-within .actions{ max-height:130px; }
+  .actions form.ki-form{ flex:1 0 100%; }
+  .actions button.ki{ color:#fff; background:var(--accent); border-color:var(--accent); }
+  .actions button.ki:hover{ background:var(--accent-hover); border-color:var(--accent-hover); }
+
   /* ===== Empty ===== */
   .empty{ display:flex; align-items:center; justify-content:center; min-height:52px;
           border:1px dashed var(--border); border-radius:var(--radius-md);
@@ -184,7 +194,7 @@
     .board{ scroll-snap-type:x mandatory; padding:14px; gap:12px; }
     .col{ flex:0 0 86vw; max-width:86vw; max-height:none; }
     .legend{ display:none !important; }
-    .actions{ max-height:60px; opacity:1; } /* Touch: immer sichtbar */
+    .actions{ max-height:130px; opacity:1; } /* Touch: immer sichtbar */
   }
   .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 </style>
@@ -225,6 +235,7 @@
           <span class="auto {{ t.automation_level }}" title="{{ auto_full[t.automation_level] }}">
             <i class="ad" aria-hidden="true"></i>{{ auto_label[t.automation_level] }}</span>
         </div>
+        {% if t.ai_requested %}<div class="ki-flag">🤖 wartet auf KI…</div>{% endif %}
         {% if t.measure %}<p class="measure">{{ t.measure }}</p>{% endif %}
         {% if t.micro_action %}<p class="micro">→ {{ t.micro_action }}</p>{% endif %}
         {% if t.result %}<div class="result">{{ t.result }}</div>{% endif %}
@@ -241,6 +252,13 @@
           {% else %}
             <form method="post" action="/ui/{{ t.id }}/done"><button class="go" type="submit">Erledigt</button></form>
             <form method="post" action="/ui/{{ t.id }}/cancel"><button type="submit">Verwerfen</button></form>
+          {% endif %}
+          {% if s != "done" %}
+            {% if t.ai_requested %}
+            <form class="ki-form" method="post" action="/ui/{{ t.id }}/ai_cancel"><button type="submit">✕ KI-Anfrage zurücknehmen</button></form>
+            {% else %}
+            <form class="ki-form" method="post" action="/ui/{{ t.id }}/ai_request"><button class="ki" type="submit">🤖 KI, mach das</button></form>
+            {% endif %}
           {% endif %}
         </div>
       </article>
