@@ -142,6 +142,9 @@
   .auto.red   { color:var(--auto-red);    background:var(--status-blocked-bg); }
   .auto.red .ad{ background:var(--auto-red); }
 
+  .detail{ margin:7px 0 0; color:var(--text-secondary); font-size:12.5px; line-height:1.45;
+           white-space:pre-wrap;
+           display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .measure{ margin:7px 0 0; color:var(--text-secondary); font-size:12.5px; line-height:1.45;
             display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .micro{ margin:6px 0 0; color:var(--text-muted); font-size:12px;
@@ -151,6 +154,7 @@
            display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
   /* Volltext beim Hovern oder Fokussieren/Antippen einer Karte (Karten haben tabindex=0) */
+  .card:hover .detail,  .card:focus-within .detail,
   .card:hover .measure, .card:focus-within .measure,
   .card:hover .micro,   .card:focus-within .micro,
   .card:hover .result,  .card:focus-within .result{
@@ -200,7 +204,7 @@
     .col{ flex:0 0 86vw; max-width:86vw; max-height:none; }
     .legend{ display:none !important; }
     .actions{ max-height:130px; opacity:1; } /* Touch: immer sichtbar */
-    .measure,.micro,.result{ -webkit-line-clamp:unset; overflow:visible; } /* Touch: Volltext */
+    .detail,.measure,.micro,.result{ -webkit-line-clamp:unset; overflow:visible; } /* Touch: Volltext */
   }
   .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 </style>
@@ -242,6 +246,7 @@
             <i class="ad" aria-hidden="true"></i>{{ auto_label[t.automation_level] }}</span>
         </div>
         {% if t.ai_requested %}<div class="ki-flag">🤖 wartet auf KI…</div>{% endif %}
+        {% if t.detail %}<p class="detail">{{ t.detail }}</p>{% endif %}
         {% if t.measure %}<p class="measure">{{ t.measure }}</p>{% endif %}
         {% if t.micro_action %}<p class="micro">→ {{ t.micro_action }}</p>{% endif %}
         {% if t.result %}<div class="result">{{ t.result }}</div>{% endif %}
