@@ -130,8 +130,7 @@
   .prio-mid   .prio{ color:var(--prio-mid); }
   .prio-low   .prio{ color:var(--prio-low); }
   .card__title{ font-size:14px; font-weight:550; line-height:1.4; letter-spacing:-.005em;
-                color:var(--text-primary); flex:1;
-                display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+                color:var(--text-primary); flex:1; overflow-wrap:anywhere; }
   .auto{ flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 7px;
          font-size:10.5px; font-weight:600; letter-spacing:.01em; border-radius:6px;
          border:1px solid transparent; white-space:nowrap; }
@@ -150,6 +149,12 @@
   .result{ margin:9px 0 0; padding-top:8px; border-top:1px dashed var(--border);
            color:var(--status-done); font-size:12px; line-height:1.45; white-space:pre-wrap;
            display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* Volltext beim Hovern oder Fokussieren/Antippen einer Karte (Karten haben tabindex=0) */
+  .card:hover .measure, .card:focus-within .measure,
+  .card:hover .micro,   .card:focus-within .micro,
+  .card:hover .result,  .card:focus-within .result{
+    -webkit-line-clamp:unset; overflow:visible; }
 
   .card__foot{ display:flex; align-items:center; gap:8px; margin-top:11px; flex-wrap:wrap; }
   .proj{ display:inline-flex; align-items:center; gap:6px; max-width:100%;
@@ -195,6 +200,7 @@
     .col{ flex:0 0 86vw; max-width:86vw; max-height:none; }
     .legend{ display:none !important; }
     .actions{ max-height:130px; opacity:1; } /* Touch: immer sichtbar */
+    .measure,.micro,.result{ -webkit-line-clamp:unset; overflow:visible; } /* Touch: Volltext */
   }
   .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 </style>
